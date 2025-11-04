@@ -7,7 +7,8 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js",
+    "build": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
