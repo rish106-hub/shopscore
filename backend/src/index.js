@@ -9,29 +9,32 @@ const app = express();
 
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('Incoming Request Origin:', origin);
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:4173',
-      'http://localhost:4174'
+      'http://localhost:4174',
+      'https://shop-score-capstone-sem-2.vercel.app'
     ];
-    // In production, use process.env.FRONTEND_URL
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Allow any localhost origin for development/testing
+    if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+      return callback(null, true);
+    }
+
+    // In production, check specifics
     if (process.env.NODE_ENV === 'production') {
-      // Allow allowedOrigins even in production for local simulation
-      if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin === process.env.FRONTEND_URL) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    } else {
-      // In development, allow requests with no origin (like mobile apps or curl requests)
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+      if (allowedOrigins.indexOf(origin) !== -1 || origin === process.env.FRONTEND_URL) {
+        return callback(null, true);
       }
     }
+
+    callback(new Error('Not allowed by CORS: ' + origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
