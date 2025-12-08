@@ -8,8 +8,31 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL : 'http://localhost:3000',
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:4173',
+      'http://localhost:4174'
+    ];
+    // In production, use process.env.FRONTEND_URL
+    if (process.env.NODE_ENV === 'production') {
+      // Allow allowedOrigins even in production for local simulation
+      if (!origin || allowedOrigins.indexOf(origin) !== -1 || origin === process.env.FRONTEND_URL) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else {
+      // In development, allow requests with no origin (like mobile apps or curl requests)
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -41,7 +64,7 @@ app.use((err, req, res, next) => {
 process.on('uncaughtException', (err) => {
   console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.error(err.name, err.message);
-  
+
   process.exit(1);
 });
 
